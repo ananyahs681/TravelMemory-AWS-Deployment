@@ -1,5 +1,3 @@
-# Keep the original application repository separate
-/TravelMemory/
 
 # Secrets and local environment files
 .env
