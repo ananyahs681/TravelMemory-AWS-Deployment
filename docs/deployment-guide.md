@@ -2,142 +2,93 @@
 
 ## 1. Project Overview
 
-This project deploys the TravelMemory MERN application using Amazon EC2, Nginx, Application Load Balancers (ALBs), and MongoDB Atlas.
+This project demonstrates the deployment of the TravelMemory MERN application on Amazon Web Services (AWS).
 
-**Application source repository:**  
-https://github.com/UnpredictablePrashant/TravelMemory
+The application consists of a React frontend, a Node.js and Express backend, and MongoDB Atlas for database storage.
 
-**Deployment documentation repository:**  
-https://github.com/ananyahs681/TravelMemory-AWS-Deployment
+**Application source:** [TravelMemory — GitHub]
+(https://github.com/UnpredictablePrashant/TravelMemory)
+**Deployment repository:** [TravelMemory AWS Deployment — GitHub](https://github.com/ananyahs681/TravelMemory-AWS-Deployment)
 
-The deployment is being completed incrementally. Each milestone is marked complete only after its configuration and functionality have been verified.
+## 2. Deployed Architecture
 
-## 2. Target Architecture
-
-The intended final architecture is:
+The application was deployed using separate frontend and backend Application Load Balancers, with two EC2 instances for each application tier.
 
 ```text
                          Users / Browser
-                                |
-                                v
+                               |
+                               v
                      Frontend Application
-                        Load Balancer
-                                |
-                     +----------+----------+
-                     |                     |
-                     v                     v
-              Frontend EC2 1        Frontend EC2 2
-                     |                     |
-                     +----------+----------+
-                                |
-                   Browser-side API requests
-                                |
-                                v
-                      Backend Application
-                         Load Balancer
-                                |
-                     +----------+----------+
-                     |                     |
-                     v                     v
-              Backend EC2 1          Backend EC2 2
-                     |                     |
-                     +----------+----------+
-                                |
-                                v
+                       Load Balancer
+                               |
+                  +------------+------------+
+                  |                         |
+                  v                         v
+            Frontend EC2 1            Frontend EC2 2
+                  |                         |
+                  +------------+------------+
+                               |
+                      React application
+                      runs in browser
+                               |
+                        API requests
+                               |
+                               v
+                     Backend Application
+                       Load Balancer
+                               |
+                  +------------+------------+
+                  |                         |
+                  v                         v
+             Backend EC2 1            Backend EC2 2
+                  |                         |
+                  +------------+------------+
+                               |
+                               v
                          MongoDB Atlas
 ```
 
-**Architecture notes:**
+### Architecture notes
 
 - The frontend ALB distributes incoming web requests across the frontend EC2 instances.
-- Nginx on the frontend instances serves the built React application.
+- Nginx serves the production React build on each frontend instance.
 - The React application runs in the user's browser.
-- Browser-side API requests are sent directly to the backend ALB.
-- The backend ALB distributes API requests across the backend EC2 instances.
-- Nginx on each backend instance forwards requests to the Node.js application.
-- The Node.js application communicates with MongoDB Atlas.
-- Frontend and backend use separate target groups and separate load balancers.
-- A custom domain and Cloudflare are optional and are not required for the initial deployment.
+- Browser API requests are sent to the backend ALB.
+- The backend ALB distributes requests across the backend EC2 instances.
+- Nginx on each backend instance forwards requests to Node.js on port `3001`.
+- The Node.js application connects to MongoDB Atlas.
+- Frontend and backend use separate target groups and load balancers.
 
-This is the intended final architecture. Additional instances and load balancers will be added after the initial application deployment has been verified.
+The architecture diagram is available at [`docs/TravelMemory-AWS-Architecture.drawio.png`](TravelMemory-AWS-Architecture.drawio.png), with the editable file at [`docs/architecture.drawio`](architecture.drawio).
 
-## 3. Prerequisites
+## 3. Deployment Environment
 
-- AWS account and access to the EC2 console.
-- MongoDB Atlas cluster and database user.
-- Git and a local development environment.
-- Ubuntu EC2 instances.
-- Appropriate EC2 security groups.
-- A configured SSH key pair.
-- AWS billing and available credits reviewed before deploying additional resources.
+| Component | Configuration |
+|---|---|
+| Cloud provider | Amazon Web Services |
+| AWS Region | Asia Pacific (Mumbai) — `ap-south-1` |
+| Operating system | Ubuntu 24.04 LTS |
+| Frontend | React.js |
+| Frontend web server | Nginx |
+| Backend | Node.js and Express |
+| Backend process management | systemd |
+| Database | MongoDB Atlas |
+| Load balancing | Application Load Balancer |
+| Compute | Amazon EC2 |
 
-## 4. Deployment Progress
+## 4. Backend Deployment
 
-### 4.1 Backend Infrastructure and Configuration
+### 4.1 Application and Dependencies
 
-- [x] Create or resume the MongoDB Atlas cluster.
-- [x] Configure the MongoDB Atlas database user.
-- [x] Launch the initial backend EC2 instance.
-- [x] Install Node.js, npm, Git, and Nginx.
-- [x] Clone the TravelMemory source repository.
-- [x] Configure backend environment variables in a server-side `.env` file.
-- [x] Establish a successful MongoDB connection.
-- [x] Configure Nginx as a reverse proxy to the Node.js application.
-- [x] Create the `travelmemory-backend` systemd service.
-- [ ] Reverify the backend service after the SSH connection timeout.
-- [ ] Confirm the Elastic IP association and verify connectivity using the stable address.
+The backend application was deployed on Ubuntu EC2 instances.
 
-### 4.2 Initial Frontend Deployment
-
-- [ ] Launch the initial frontend EC2 instance.
-- [ ] Install the required Node.js, npm, Git, and Nginx packages.
-- [ ] Clone the TravelMemory source repository.
-- [ ] Configure the frontend API URL.
-- [ ] Install frontend dependencies and create a production build.
-- [ ] Configure Nginx to serve the production build.
-- [ ] Verify that the frontend loads in a browser.
-- [ ] Verify that existing trips load from MongoDB Atlas through the backend API.
-
-### 4.3 High Availability and Load Balancing
-
-- [ ] Create an AMI of the verified backend instance.
-- [ ] Create an AMI of the verified frontend instance.
-- [ ] Launch the additional backend EC2 instance.
-- [ ] Launch the additional frontend EC2 instance.
-- [ ] Create the backend target group.
-- [ ] Register both backend instances and verify target health.
-- [ ] Create the backend Application Load Balancer.
-- [ ] Create the frontend target group.
-- [ ] Register both frontend instances and verify target health.
-- [ ] Create the frontend Application Load Balancer.
-- [ ] Update the frontend API URL to use the backend ALB DNS name.
-- [ ] Rebuild and deploy the updated frontend.
-- [ ] Verify the final application through the frontend ALB.
-
-### 4.4 Final Verification and Documentation
-
-- [ ] Verify that existing trips can be retrieved.
-- [ ] Add a new travel experience through the UI.
-- [ ] Confirm that the new record appears in the application.
-- [ ] Refresh the application and verify that the record persists.
-- [ ] Capture screenshots of the deployment and final verification.
-- [ ] Complete the architecture diagram.
-- [ ] Update this guide with final configuration details and troubleshooting notes.
-- [ ] Review AWS costs and clean up resources that are no longer required.
-
-## 5. Backend Configuration
-
-### 5.1 EC2 Instance
-
-The initial backend instance uses Ubuntu 24.04 LTS in the AWS Mumbai region (`ap-south-1`).
-
-The backend application is located at:
+Application directory:
 
 ```text
 /home/ubuntu/TravelMemory/backend
 ```
 
-The application entry point is:
+Application entry point:
 
 ```text
 backend/index.js
@@ -145,7 +96,7 @@ backend/index.js
 
 The backend dependencies are defined in `backend/package.json`.
 
-### 5.2 Environment Variables
+### 4.2 Environment Configuration
 
 The server-side environment file is located at:
 
@@ -153,30 +104,21 @@ The server-side environment file is located at:
 /home/ubuntu/TravelMemory/backend/.env
 ```
 
-The configuration includes the following variables:
+The configuration includes:
 
 | Variable | Purpose |
 |---|---|
 | `MONGO_URI` | MongoDB Atlas connection string |
-| `PORT` | Node.js application port; currently `3001` |
+| `PORT` | Node.js application port (`3001`) |
 | `CORS_ORIGIN` | Allowed browser origins |
 | `UPLOAD_DIR` | Upload directory |
 | `MAX_UPLOAD_MB` | Maximum upload size |
 | `TRUST_PROXY` | Express proxy configuration |
 | `NODE_ENV` | Application environment |
 
-The actual MongoDB connection string and database credentials must remain private.
+**Credentials and secret values are intentionally excluded from this guide.**
 
-**Security requirements:**
-
-- Never commit `.env` files containing secrets.
-- Never include database credentials in screenshots or public documentation.
-- Restrict access to the environment file.
-- Configure MongoDB Atlas network access using the required trusted source addresses rather than allowing unrestricted access.
-
-### 5.3 Backend Endpoints
-
-The application provides the following endpoints:
+### 4.3 Backend Endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
@@ -186,25 +128,25 @@ The application provides the following endpoints:
 | GET | `/trip/:id` | Retrieve a specific trip |
 | POST | `/trip` | Create a trip |
 
-The `/health` endpoint is intended to verify application health and MongoDB connectivity.
+The `/health` endpoint was verified to return a successful response with the database connected.
 
-### 5.4 Nginx Reverse Proxy
+### 4.4 Nginx Reverse Proxy
 
 Nginx listens on HTTP port `80` and forwards requests to the Node.js application on port `3001`.
 
-The backend Nginx configuration is located at:
+Backend Nginx configuration:
 
 ```text
 /etc/nginx/sites-available/travelmemory-backend
 ```
 
-The enabled site is:
+Enabled site:
 
 ```text
 /etc/nginx/sites-enabled/travelmemory-backend
 ```
 
-The proxy forwards incoming requests to:
+The reverse proxy forwards requests to:
 
 ```text
 http://127.0.0.1:3001
@@ -212,7 +154,7 @@ http://127.0.0.1:3001
 
 The default Nginx site was disabled to prevent conflicts with the TravelMemory backend configuration.
 
-### 5.5 systemd Service
+### 4.5 systemd Service
 
 The backend service is named:
 
@@ -220,21 +162,17 @@ The backend service is named:
 travelmemory-backend
 ```
 
-Its service definition is located at:
+Service definition:
 
 ```text
 /etc/systemd/system/travelmemory-backend.service
 ```
 
-The service runs the Node.js application from the backend directory and uses the server-side environment file.
+The service runs the Node.js application from the backend directory, loads the server-side environment file, starts automatically, and is configured to restart if the process exits unexpectedly.
 
-The service is configured to start automatically and restart if the process exits unexpectedly.
+### 4.6 Backend Verification
 
-The service's current operational status must be reverified after the SSH timeout.
-
-### 5.6 Backend Verification
-
-Run these commands on the backend EC2 instance:
+The following checks were completed during deployment:
 
 ```bash
 sudo systemctl status travelmemory-backend --no-pager
@@ -248,177 +186,159 @@ curl -i http://localhost:3001/health
 curl -i http://localhost/hello
 ```
 
-Expected results:
+**Verified results:**
 
-- The systemd service reports `active (running)`.
-- The health endpoint returns a successful response and reports a connected database.
-- The `/hello` endpoint returns `Hello World!`.
+- The backend systemd service was running.
+- The health endpoint reported a successful database connection.
+- The `/hello` endpoint responded successfully.
+- Both backend target instances reported healthy status.
 
-Record the verification date and any issues encountered.
+## 5. Frontend Deployment
 
-## 6. Frontend Configuration
+The React frontend was deployed to Ubuntu EC2 instances and served using Nginx.
 
-The React frontend must be configured to use the correct backend API URL.
+### 5.1 API Configuration
 
-The API URL configuration is located at:
+The frontend API URL is configured in:
 
 ```text
 frontend/src/url.js
 ```
 
-The production API URL must point to the backend Application Load Balancer after it has been created.
+The production build was configured to use the backend Application Load Balancer as its API endpoint.
 
-Because the API URL is included in the React production build, changes to the URL require rebuilding and redeploying the frontend.
+Because the API URL is included in the React production build, changing it requires rebuilding and redeploying the frontend.
 
-The initial frontend deployment must first be tested against the currently available backend endpoint. After the backend ALB is created, update the API URL and repeat the frontend build and deployment.
+### 5.2 Production Build
 
-The exact environment-variable behavior and fallback URL will be confirmed against the application's actual source code during frontend deployment.
+The production build was generated using the backend ALB URL:
 
-## 7. Load Balancer Configuration
-
-### 7.1 Backend Load Balancer
-
-Intended configuration:
-
-- Load balancer type: Application Load Balancer.
-- Scheme: Internet-facing.
-- Listener: HTTP port `80`.
-- Target group protocol: HTTP.
-- Target group port: `80`.
-- Health check path: `/hello`.
-- Targets: Both backend EC2 instances.
-
-Nginx receives traffic on port `80` and proxies it to the Node.js application on port `3001`.
-
-Verify that both backend targets report healthy status before final application testing.
-
-### 7.2 Frontend Load Balancer
-
-Intended configuration:
-
-- Load balancer type: Application Load Balancer.
-- Scheme: Internet-facing.
-- Listener: HTTP port `80`.
-- Target group protocol: HTTP.
-- Target group port: `80`.
-- Health check path: `/`.
-- Targets: Both frontend EC2 instances.
-
-Verify that both frontend targets report healthy status before final application testing.
-
-### 7.3 Network Access
-
-Configure security groups so that:
-
-- SSH access is restricted to the required administrative source IP.
-- Public HTTP access is allowed where required for the internet-facing load balancers.
-- Application instances accept HTTP traffic from the appropriate load balancer security group.
-- Backend API access is restricted to the intended traffic paths wherever feasible.
-- MongoDB Atlas permits connections from the backend's current stable public IP address or another deliberately configured network path.
-
-Review the effective security group rules before exposing the final application.
-
-## 8. Acceptance Tests
-
-Perform the following tests after completing the load balancer configuration:
-
-1. Open the frontend using the frontend ALB DNS name.
-2. Confirm that the React application loads.
-3. Confirm that existing trips load successfully.
-4. Confirm that browser API requests reach the backend through the backend ALB.
-5. Add a new travel experience through the UI.
-6. Confirm that the new experience appears in the application.
-7. Refresh the page and verify that the record remains available.
-8. Confirm that both frontend targets and both backend targets are healthy.
-9. Record the test date, results, and supporting screenshots.
-
-## 9. Screenshots and Evidence
-
-Store screenshots in:
-
-```text
-docs/screenshots/
+```bash
+REACT_APP_BACKEND_URL=http://<backend-alb-dns-name> npm run build
 ```
 
-Suggested folders:
+The build output was copied to the Nginx web directory:
 
-```text
-docs/screenshots/
-├── 01-aws-setup/
-├── 02-backend/
-├── 03-frontend/
-├── 04-load-balancers/
-└── 05-final-verification/
+```bash
+sudo cp -r build/. /var/www/travelmemory/
+sudo chown -R www-data:www-data /var/www/travelmemory
 ```
 
-Capture evidence of:
+The frontend Nginx configuration was tested, and the application returned a successful HTTP response.
 
-- Initial AWS configuration and billing review.
-- Backend EC2 configuration and service status.
-- Successful backend health checks.
-- Frontend deployment and application UI.
-- Load balancer listeners and target health.
-- Successful trip retrieval and creation.
+### 5.3 Frontend Verification
 
-Redact account identifiers and never capture passwords, private keys, access tokens, or database connection strings.
+The following checks were completed:
 
-## 10. Troubleshooting Notes
+- The frontend application loaded through the frontend ALB.
+- Existing trips were retrieved successfully.
+- New trips could be created through the application UI.
+- Newly created trips appeared on the homepage after refreshing.
+- Both frontend target instances reported healthy status.
 
-Record each significant issue using the following format:
+## 6. Load Balancer Configuration
 
-| Item | Details |
+Two internet-facing Application Load Balancers were configured.
+
+### 6.1 Backend ALB
+
+| Setting | Configuration |
 |---|---|
-| Issue | Describe the observed problem |
-| Root cause | Record the confirmed cause, if known |
-| Resolution | Document the change made |
-| Verification | Record the test that confirmed the fix |
-| Date | Record when the issue occurred |
+| Listener | HTTP `80` |
+| Target group protocol | HTTP |
+| Target group port | `80` |
+| Health check path | `/hello` |
+| Targets | Two backend EC2 instances |
 
-For SSH timeouts, check the instance state, public or Elastic IP association, security group rules, and network connectivity before changing application configuration.
+Nginx on the backend instances receives traffic on port `80` and proxies it to Node.js on port `3001`.
 
-For backend failures, inspect the systemd service status and journal logs.
+Both backend targets were verified healthy.
 
-Useful commands:
+### 6.2 Frontend ALB
 
-```bash
-sudo systemctl status travelmemory-backend --no-pager
+| Setting | Configuration |
+|---|---|
+| Listener | HTTP `80` |
+| Target group protocol | HTTP |
+| Target group port | `80` |
+| Health check path | `/` |
+| Targets | Two frontend EC2 instances |
+
+Nginx serves the production React application on each frontend instance.
+
+Both frontend targets were verified healthy.
+
+### 6.3 Network Access
+
+Security groups were configured to support the required application traffic:
+
+- SSH access was restricted to the required administrative source.
+- HTTP access was enabled for the internet-facing load balancers.
+- Application instances accepted traffic from the appropriate load balancer security groups.
+- MongoDB Atlas network access was configured to permit backend connectivity.
+
+## 7. Acceptance Tests
+
+The following acceptance tests were completed:
+
+| Test | Result |
+|---|---|
+| Frontend loads through the frontend ALB | Passed |
+| Existing trips are retrieved | Passed |
+| Backend `/health` reports database connectivity | Passed |
+| Backend `/hello` responds successfully | Passed |
+| New trip can be created through the UI | Passed |
+| Newly created trip appears after refresh | Passed |
+| Both frontend targets report healthy | Passed |
+| Both backend targets report healthy | Passed |
+
+## 8. Screenshots and Evidence
+
+Deployment screenshots are stored in:
+
+```text
+docs/screenshots/
 ```
 
-```bash
-sudo journalctl -u travelmemory-backend -n 100 --no-pager
-```
+The evidence includes:
 
-```bash
-sudo nginx -t
-```
+- Frontend application homepage
+- Frontend and backend target group health
+- Backend health check
+- Backend and frontend ALB details
+- Running EC2 instances
+- MongoDB Atlas database configuration
+- Saved trips in the application
+- Backend systemd service status
+- Successful frontend production build
 
-```bash
-curl -i http://localhost:3001/health
-```
+The screenshots provide evidence of the deployment and verification completed during the assignment.
 
-Do not record credentials or sensitive environment-variable values in troubleshooting logs.
+## 9. Security Considerations
 
-## 11. Cost Management and Cleanup
+- Do not commit database credentials, `.env` files, AWS access keys, private SSH keys, or other secrets.
+- Keep database credentials in server-side environment files.
+- Restrict SSH access to trusted administrative IP addresses.
+- Configure security groups to allow only required traffic.
+- Do not expose sensitive credentials in screenshots or documentation.
 
-Review AWS billing before and during deployment.
+## 10. Cost Management and Cleanup
 
-Resources that may incur charges include:
+AWS resources may incur charges, including:
 
-- EC2 instances.
-- EBS volumes and snapshots.
-- Public IPv4 addresses and Elastic IPs.
-- Application Load Balancers.
-- Data transfer.
+- EC2 instances
+- EBS volumes and snapshots
+- Application Load Balancers
+- Public IPv4 addresses and Elastic IPs
+- Data transfer
 
-An Elastic IP may incur charges depending on its usage and the applicable AWS pricing rules. Avoid leaving unused addresses allocated.
+After collecting the required assignment evidence:
 
-After completing the assignment and collecting the required evidence:
-
-1. Identify which AWS resources must remain available.
-2. Stop or terminate resources that are no longer required, as appropriate.
+1. Identify resources that must remain available for evaluation.
+2. Stop or terminate resources that are no longer required.
 3. Delete unused load balancers and target groups.
 4. Review unused EBS volumes and snapshots.
 5. Release unused Elastic IP addresses.
-6. Verify that no unnecessary billable resources remain.
+6. Review AWS billing to confirm that unnecessary billable resources have been removed.
 
-Retain any resources needed for evaluation until the assignment requirements have been satisfied.
+Retain any resources required for evaluation until the assignment requirements have been satisfied.

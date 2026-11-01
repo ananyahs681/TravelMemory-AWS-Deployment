@@ -2,58 +2,94 @@
 
 ## Project Overview
 
-This project deploys the TravelMemory MERN application on AWS.
+This project demonstrates the deployment of the TravelMemory MERN application on Amazon Web Services (AWS).
 
-The application uses a React frontend, a Node.js and Express backend,
-and MongoDB Atlas for database storage.
+The application consists of a React frontend, a Node.js and Express backend, and MongoDB Atlas for database storage. The deployment uses Amazon EC2, Nginx, Application Load Balancers, and MongoDB Atlas.
 
 ## Source Application
 
-https://github.com/UnpredictablePrashant/TravelMemory
+[TravelMemory — GitHub](https://github.com/UnpredictablePrashant/TravelMemory)
 
-## Deployment Objectives
+## Deployed Architecture
 
-- Deploy the React frontend on Ubuntu EC2 instances using Nginx.
-- Deploy the Node.js backend on Ubuntu EC2 instances.
-- Configure MongoDB Atlas connectivity.
-- Configure backend and frontend Application Load Balancers.
-- Verify trip retrieval and creation through the application UI.
-- Document the deployment with screenshots and an architecture diagram.
+The React frontend is served through the frontend Application Load Balancer. API requests are routed through the backend Application Load Balancer to the Node.js backend instances, which connect to MongoDB Atlas.
 
-## Planned Architecture
+![TravelMemory AWS Architecture](docs/TravelMemory-AWS-Architecture.drawio.png)
 
-Browser → Frontend Application Load Balancer → Frontend EC2 instances
-→ Backend Application Load Balancer → Backend EC2 instances
-→ MongoDB Atlas
+## Deployment Environment
 
-Cloudflare and a custom domain are optional and depend on availability.
+| Component | Configuration |
+|---|---|
+| Cloud provider | Amazon Web Services |
+| AWS Region | Asia Pacific (Mumbai) — `ap-south-1` |
+| Operating system | Ubuntu 24.04 LTS |
+| Frontend | React.js |
+| Web server | Nginx |
+| Backend | Node.js and Express |
+| Process management | systemd |
+| Database | MongoDB Atlas |
+| Load balancing | Application Load Balancer |
+| Compute | Amazon EC2 |
+
+## Deployment Evidence
+
+Screenshots documenting the deployed application, AWS infrastructure,
+load balancers, target group health, and verification results are available
+in [`docs/screenshots/`](docs/screenshots/).
+
+See the [Deployment Guide](docs/deployment-guide.md) and
+[AWS Architecture Diagram](docs/TravelMemory-AWS-Architecture.drawio.png)
+for additional details.
 
 ## Repository Structure
 
-- `docs/deployment-guide.md` — deployment steps and verification.
-- `docs/architecture.drawio` — AWS architecture diagram.
-- `docs/screenshots/` — deployment evidence.
-- `deployment/nginx/` — Nginx configuration files.
-- `deployment/systemd/` — backend service configuration.
+```text
+TravelMemory-AWS-Deployment/
+├── README.md
+├── deployment/
+│   ├── nginx/
+│   └── systemd/
+├── docs/
+│   ├── deployment-guide.md
+│   ├── architecture.drawio
+│   ├── TravelMemory-AWS-Architecture.drawio.png
+│   └── screenshots/
+└── TravelMemory/
+    └── Original application source
+```
 
-## Deployment Status
+## Verification
 
-- [x] Source repository cloned and inspected.
-- [x] Local documentation workspace created.
-- [x] Deployment repository initialized.
-- [ ] AWS infrastructure configured.
-- [ ] Backend deployed and verified.
-- [ ] Frontend deployed and verified.
-- [ ] Load balancers configured and verified.
-- [ ] Final application acceptance tests completed.
-- [ ] Screenshots and architecture diagram added.
+The following acceptance tests were completed:
+
+- [x] Frontend loads through the frontend ALB.
+- [x] Existing trips are retrieved successfully.
+- [x] Backend `/health` endpoint confirms database connectivity.
+- [x] Backend `/hello` endpoint responds successfully.
+- [x] New trips can be created through the application UI.
+- [x] Newly created trips appear after refreshing the homepage.
+- [x] Both frontend target instances report healthy status.
+- [x] Both backend target instances report healthy status.
+
+## Documentation and Evidence
+
+- [Deployment Guide](docs/deployment-guide.md)
+- [AWS Architecture Diagram — Draw.io](docs/architecture.drawio)
+- [AWS Architecture Diagram — PNG](docs/TravelMemory-AWS-Architecture.drawio.png)
+- [Deployment Screenshots](docs/screenshots/)
 
 ## Security
 
-Never commit database credentials, `.env` files, AWS access keys,
-private SSH keys, or other secrets to this repository.
+- Do not commit database credentials, `.env` files, AWS access keys, private SSH keys, or other secrets.
+- Keep database credentials in server-side environment files.
+- Restrict SSH access to trusted administrative IP addresses.
+- Configure security groups to allow only required traffic.
+- Do not expose sensitive credentials in screenshots or documentation.
 
-## Cleanup
+## Cost Management and Cleanup
 
-After completing the assignment, review and remove AWS resources
-that are no longer required to avoid unnecessary charges.
+Review AWS billing and resource usage after completing the assignment.
+
+Resources that may incur charges include EC2 instances, EBS volumes and snapshots, Application Load Balancers, public IPv4 addresses, and data transfer.
+
+Stop or remove resources that are no longer required, while retaining any resources needed for evaluation or demonstration.
